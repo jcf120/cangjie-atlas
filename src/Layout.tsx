@@ -28,8 +28,7 @@ export default function Layout({
         style={{
           width,
           height: width,
-          backgroundColor: chars?.length ? "grey" : "none",
-          borderRadius: "50%",
+          backgroundColor: chars?.length ? "#aaa" : "",
         }}
       />
     );
@@ -38,13 +37,19 @@ export default function Layout({
   const childWidth = width / 10;
   const charHeight = chars?.length ? width / (2 * chars.length) : 0;
   return (
-    <div className={style.root} style={{ width }}>
+    <div
+      className={style.root}
+      style={{ width, height: width * (hideChars ? 0.3 : 1) }}
+    >
       {!hideChars && (
-        <div className={style.charsRow} style={{ fontSize: charHeight }}>
+        <div
+          className={style.charsRow}
+          style={{ height: width * 0.7, fontSize: charHeight }}
+        >
           {chars}
         </div>
       )}
-      <div className={style.layoutRow}>
+      <div className={style.layoutRow} style={{ height: childWidth }}>
         {row1Keys.map((key, idx) => (
           <Layout
             key={idx}
@@ -54,7 +59,7 @@ export default function Layout({
           />
         ))}
       </div>
-      <div className={style.layoutRow}>
+      <div className={style.layoutRow} style={{ height: childWidth }}>
         {row2Keys.map((key, idx) => (
           <Layout
             key={idx}
@@ -64,7 +69,7 @@ export default function Layout({
           />
         ))}
       </div>
-      <div className={style.layoutRow}>
+      <div className={style.layoutRow} style={{ height: childWidth }}>
         {row3Keys.map((key, idx) => (
           <Layout
             key={idx}

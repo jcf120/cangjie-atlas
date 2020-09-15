@@ -4,12 +4,10 @@
 
 .charsRow {
   display: flex;
-  height: 70%;
   justify-content: center;
   align-items: center;
 }
 
 .layoutRow {
   display: flex;
-  height: 10%;
 }
