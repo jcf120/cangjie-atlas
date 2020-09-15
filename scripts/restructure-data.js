@@ -69,7 +69,10 @@ reader.on("close", () => {
         console.log("missing?", scope, key, layout);
         continue;
       }
-      out[key] = layout.get(key).map((x) => x.traditional);
+      out[key] = layout
+        .get(key)
+        .map((x) => x.traditional)
+        .join("");
     }
     trimmedLayouts[scope] = out;
   }
