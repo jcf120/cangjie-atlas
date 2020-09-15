@@ -1,5 +1,9 @@
 const readline = require("readline");
 const fs = require("fs");
+const fontkit = require("fontkit");
+
+const fontCollection = fontkit.openSync("/System/Library/Fonts/PingFang.ttc");
+const font = fontCollection.fonts[0];
 
 const reader = readline.createInterface({
   input: fs.createReadStream("src/data/data_table.txt", "utf8"),
@@ -39,6 +43,9 @@ reader.on("line", (line) => {
     const layout = layouts.get(scope) || new Map();
     const chars = layout.get(key) || [];
     if (chars.find((x) => x.traditional === traditional)) {
+      continue;
+    }
+    if (!font.hasGlyphForCodePoint(traditional.charCodeAt(0))) {
       continue;
     }
     chars.push({ traditional, ordering });
