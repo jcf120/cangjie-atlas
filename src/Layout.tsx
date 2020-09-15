@@ -60,6 +60,7 @@ export default function Layout({
         ))}
       </div>
       <div className={style.layoutRow} style={{ height: childWidth }}>
+        <div style={{ width: childWidth * 0.2, height: width }} />
         {row2Keys.map((key, idx) => (
           <Layout
             key={idx}
@@ -70,6 +71,7 @@ export default function Layout({
         ))}
       </div>
       <div className={style.layoutRow} style={{ height: childWidth }}>
+        <div style={{ width: childWidth * 0.9, height: width }} />
         {row3Keys.map((key, idx) => (
           <Layout
             key={idx}
