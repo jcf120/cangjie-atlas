@@ -20,7 +20,7 @@ function App() {
   }, [ref]);
   return (
     <div className={style.root} ref={ref}>
-      {width && <Layout hideChars width={width} scope={scope} />}
+      {!!width && <Layout hideChars width={width} scope={scope} />}
     </div>
   );
 }
