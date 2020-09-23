@@ -1,13 +1,3 @@
-.root {
-  overflow: hidden;
-}
-
-.charsRow {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.layoutRow {
-  display: flex;
+.canvas {
+  width: 100%;
 }

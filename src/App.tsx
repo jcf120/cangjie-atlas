@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import style from "./App.module.css";
 import Layout from "./Layout";
 
@@ -14,22 +14,18 @@ function useScopeInput() {
         setScope((scope) => scope.substring(0, scope.length - 1));
       }
     });
-  });
+  }, []);
   return scope;
 }
 
 function App() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState<number>(0);
-  useEffect(() => {
-    if (ref.current) {
-      setWidth(ref.current.offsetWidth);
-    }
-  }, [ref]);
   const scope = useScopeInput();
   return (
-    <div className={style.root} ref={ref}>
-      {!!width && <Layout hideChars width={width} scope={scope} />}
+    <div className={style.root}>
+      <div className={style.breadcrumb}>Scope: {scope || "<Begin typing>"}</div>
+      <div className={style.layoutContainer}>
+        <Layout scope={scope} />
+      </div>
     </div>
   );
 }
