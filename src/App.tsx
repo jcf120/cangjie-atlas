@@ -71,7 +71,8 @@ function App() {
     <div className={style.root}>
       <div className={style.breadcrumb}>
         <input
-          placeholder="Type here"
+          autoFocus
+          placeholder="Begin typing"
           onChange={(e) => setScope(e.target.value)}
         />
       </div>
