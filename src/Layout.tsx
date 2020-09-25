@@ -1,6 +1,5 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import layoutsJson from "./data/layouts.json";
-import style from "./Layout.module.css";
 
 type LayoutData = Record<string, string | undefined>;
 type LayoutsData = Record<string, LayoutData | undefined>;
@@ -11,11 +10,10 @@ const row2Keys = Array.from("asdfghjkl");
 const row3Keys = Array.from("zxcvbnm");
 const units = row1Keys.length;
 
-function setupCanvas(canvas: HTMLCanvasElement) {
+function setupCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = rect.height * dpr;
+  canvas.width = width * dpr;
+  canvas.height = height * dpr;
   const ctx = canvas.getContext("2d");
   if (ctx) {
     ctx.scale(dpr, dpr);
@@ -115,21 +113,39 @@ function drawQwerty(ctx: CanvasRenderingContext2D, width: number) {
   }
 }
 
+function debounce(fn: () => void, ms: number) {
+  let task = null as null | NodeJS.Timeout;
+  return () => {
+    if (task) clearTimeout(task);
+    task = setTimeout(fn, ms);
+  };
+}
+
 export default function Layout({ scope }: { scope: string }) {
+  const [width, setWidth] = useState(null as null | number);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!ctxRef.current && canvas) ctxRef.current = setupCanvas(canvas);
-    const ctx = ctxRef.current;
-    if (ctx && canvas) {
-      const rect = canvas.getBoundingClientRect();
-      ctx.clearRect(0, 0, rect.width, rect.height);
+    setWidth(canvasRef.current?.offsetWidth ?? null);
+    const resize = debounce(() => {
+      setWidth(canvasRef.current?.offsetWidth ?? null);
+    }, 100);
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
+  }, []);
+  const height = ((width ?? 0) * 3.5) / 10;
+  useEffect(() => {
+    if (width) {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = setupCanvas(canvas, width, height);
+      if (!ctx) return;
+      ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = "#222";
-      drawQwerty(ctx, rect.width);
+      drawQwerty(ctx, width);
       ctx.fillStyle = "white";
-      drawRecursive(ctx, 0, 0, rect.width, scope);
+      drawRecursive(ctx, 0, 0, width, scope);
     }
-  }, [scope]);
-  return <canvas className={style.canvas} ref={canvasRef} />;
+  }, [scope, width, height]);
+  return <canvas style={{ width: "100%", height }} ref={canvasRef} />;
 }
