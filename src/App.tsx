@@ -43,8 +43,10 @@ function charToKey(char: string) {
     case "中":
       return "l";
     case "　":
+    case "重":
       return "z";
     case "已":
+    case "難":
       return "x";
     case "金":
       return "c";
