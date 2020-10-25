@@ -2,25 +2,8 @@
   width: 100vw;
   height: 100vh;
   position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  justify-content: center;
-}
-
-.breadcrumb {
-  text-align: center;
-  margin: 1rem;
-}
-
-.breadcrumb input {
-  color: inherit;
-  background-color: inherit;
-  border: solid #222 1px;
-  border-radius: 3px;
-  padding: 0.5rem;
-}
-
-.breadcrumb input:focus {
-  outline: none;
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  grid-gap: 1rem;
+  padding: 1rem;
 }

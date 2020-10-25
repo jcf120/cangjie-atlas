@@ -14,3 +14,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
+
+textarea {
+  color: inherit;
+  background-color: inherit;
+}
+
+textarea:focus {
+  outline: none;
+}
+
+* {
+  box-sizing: border-box;
+}

@@ -1,151 +1,84 @@
 import React, { useEffect, useRef, useState } from "react";
-import layoutsJson from "./data/layouts.json";
+import { Dict, getCangjieKey, row1Keys, row2Keys, row3Keys } from "./model";
+import style from "./Layout.module.css";
 
-type LayoutData = Record<string, string | undefined>;
-type LayoutsData = Record<string, LayoutData | undefined>;
-const layoutsData: LayoutsData = layoutsJson;
-
-const row1Keys = Array.from("qwertyuiop");
-const row2Keys = Array.from("asdfghjkl");
-const row3Keys = Array.from("zxcvbnm");
-const units = row1Keys.length;
-
-function setupCanvas(canvas: HTMLCanvasElement, width: number, height: number) {
-  const dpr = window.devicePixelRatio || 1;
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  const ctx = canvas.getContext("2d");
-  if (ctx) {
-    ctx.scale(dpr, dpr);
-    ctx.fillStyle = "white";
-    ctx.textAlign = "center";
-    ctx.textBaseline = "bottom";
-  }
-  return ctx;
-}
-
-function drawRecursive(
-  ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  scope: string
+function gather(
+  combos: Dict,
+  sortedCodes: string[],
+  scope: string,
+  limit: number
 ) {
-  const layout = layoutsData[scope];
-  if (!layout) return;
-  const unit = width / units;
-  ctx.font = `300 ${unit * ((units - 3) / units)}px sans-serif`;
-  for (let i = 0; i < row1Keys.length; i++) {
-    const key = row1Keys[i];
-    const chars = layout[key];
-    if (chars) {
-      ctx.fillText(chars, x + unit * 0.5 + unit * i, y + unit, unit);
+  let out = "";
+  for (const code of sortedCodes) {
+    if (code.startsWith(scope) && code !== scope) {
+      out += combos[code];
+      if (out.length >= limit) return out.substring(0, limit);
     }
   }
-  for (let i = 0; i < row2Keys.length; i++) {
-    const key = row2Keys[i];
-    const chars = layout[key];
-    if (chars) {
-      ctx.fillText(chars, x + unit * 0.7 + unit * i, y + unit * 2, unit);
-    }
-  }
-  for (let i = 0; i < row3Keys.length; i++) {
-    const key = row3Keys[i];
-    const chars = layout[key];
-    if (chars) {
-      ctx.fillText(chars, x + unit * 0.9 + unit * i, y + unit * 3, unit);
-    }
-  }
-  if (unit > 4) {
-    for (let i = 0; i < row1Keys.length; i++) {
-      const key = row1Keys[i];
-      drawRecursive(ctx, x + unit * i, y + unit * 0.9, unit, scope + key);
-    }
-    for (let i = 0; i < row2Keys.length; i++) {
-      const key = row2Keys[i];
-      drawRecursive(
-        ctx,
-        x + unit * 0.2 + unit * i,
-        y + unit * 1.9,
-        unit,
-        scope + key
-      );
-    }
-    for (let i = 0; i < row3Keys.length; i++) {
-      const key = row3Keys[i];
-      drawRecursive(
-        ctx,
-        x + unit * 0.4 + unit * i,
-        y + unit * 2.9,
-        unit,
-        scope + key
-      );
-    }
-  }
+  return out;
 }
 
-function drawQwerty(ctx: CanvasRenderingContext2D, width: number) {
-  const unit = width / units;
-  ctx.font = `bold ${unit}px sans-serif`;
-  for (let i = 0; i < row1Keys.length; i++) {
-    ctx.fillText(
-      row1Keys[i].toUpperCase(),
-      unit * 0.5 + unit * i,
-      unit * 1.2,
-      unit
-    );
-  }
-  for (let i = 0; i < row2Keys.length; i++) {
-    ctx.fillText(
-      row2Keys[i].toUpperCase(),
-      unit * 0.7 + unit * i,
-      unit * 2.2,
-      unit
-    );
-  }
-  for (let i = 0; i < row3Keys.length; i++) {
-    ctx.fillText(
-      row3Keys[i].toUpperCase(),
-      unit * 0.9 + unit * i,
-      unit * 3.2,
-      unit
-    );
-  }
+function renderKey(
+  combos: Dict,
+  sortedCodes: string[],
+  scope: string,
+  cap: string,
+  unit: number,
+  charLimit: number
+) {
+  const chars = combos[scope] ?? "";
+  return (
+    <div
+      key={cap}
+      className={style.key}
+      style={{ width: unit, height: unit * 1.1 }}
+    >
+      <div className={style.keyBg} style={{ fontSize: unit * 0.8 }}>
+        {getCangjieKey(cap)}
+      </div>
+      <div className={style.keyFg} style={{ width: unit, height: unit * 1.1 }}>
+        <span>{chars}</span>
+        <span style={{ opacity: 0.5 }}>
+          {gather(combos, sortedCodes, scope, charLimit - chars.length)}
+        </span>
+      </div>
+    </div>
+  );
 }
 
-function debounce(fn: () => void, ms: number) {
-  let task = null as null | NodeJS.Timeout;
-  return () => {
-    if (task) clearTimeout(task);
-    task = setTimeout(fn, ms);
-  };
-}
-
-export default function Layout({ scope }: { scope: string }) {
-  const [width, setWidth] = useState(null as null | number);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+export default function Layout({
+  scope,
+  combos,
+  sortedCodes,
+}: {
+  scope: string;
+  combos: Dict;
+  sortedCodes: string[];
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(0);
   useEffect(() => {
-    setWidth(canvasRef.current?.offsetWidth ?? null);
-    const resize = debounce(() => {
-      setWidth(canvasRef.current?.offsetWidth ?? null);
-    }, 100);
-    resize();
-    window.addEventListener("resize", resize);
-    return () => window.removeEventListener("resize", resize);
+    setWidth(ref.current?.offsetWidth ?? 0);
   }, []);
-  const height = ((width ?? 0) * 3.5) / 10;
-  useEffect(() => {
-    if (width) {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = setupCanvas(canvas, width, height);
-      if (!ctx) return;
-      ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = "#222";
-      drawQwerty(ctx, width);
-      ctx.fillStyle = "white";
-      drawRecursive(ctx, 0, 0, width, scope);
-    }
-  }, [scope, width, height]);
-  return <canvas style={{ width: "100%", height }} ref={canvasRef} />;
+  const unit = (width - 45) / 10;
+  const charLimit = Math.pow(Math.floor(unit / 16), 2);
+  return (
+    <div ref={ref} className={style.root}>
+      <div className={style.row}>
+        {row1Keys.map((key) =>
+          renderKey(combos, sortedCodes, scope + key, key, unit, charLimit)
+        )}
+      </div>
+      <div className={style.row} style={{ marginLeft: "2%" }}>
+        {row2Keys.map((key) =>
+          renderKey(combos, sortedCodes, scope + key, key, unit, charLimit)
+        )}
+      </div>
+      <div className={style.row} style={{ marginLeft: "8%" }}>
+        {row3Keys.map((key) =>
+          renderKey(combos, sortedCodes, scope + key, key, unit, charLimit)
+        )}
+      </div>
+    </div>
+  );
 }
