@@ -9,7 +9,18 @@ const reader = readline.createInterface({
   input: fs.createReadStream("src/data/data_table.txt", "utf8"),
 });
 
-const layouts = new Map();
+const lists = {
+  hsk1: fs.readFileSync("src/data/hsk1.txt", "utf8"),
+  hsk2: fs.readFileSync("src/data/hsk2.txt", "utf8"),
+  hsk3: fs.readFileSync("src/data/hsk3.txt", "utf8"),
+  hsk4: fs.readFileSync("src/data/hsk4.txt", "utf8"),
+};
+const listNames = Object.keys(lists);
+
+const comboSets = Object.fromEntries(
+  listNames.map((name) => [name, new Map()])
+);
+const comboSetRest = new Map();
 
 reader.on("line", (line) => {
   if (!line || line.startsWith("#")) {
@@ -30,7 +41,7 @@ reader.on("line", (line) => {
     _v3Codes,
     v5Codes,
     _shortCode,
-    ordering,
+    _ordering,
   ] = line.split(" ");
 
   if (!isChinese) return;
@@ -38,46 +49,37 @@ reader.on("line", (line) => {
   const codes = v5Codes.split(",");
   for (const code of codes) {
     if (code === "NA") continue;
-    const key = code[code.length - 1];
-    const scope = code.substring(0, code.length - 1);
-    const layout = layouts.get(scope) || new Map();
-    const chars = layout.get(key) || [];
-    if (chars.find((x) => x.traditional === traditional)) {
-      continue;
+    if (!font.hasGlyphForCodePoint(traditional.charCodeAt(0))) continue;
+    for (const [listName, list] of Object.entries(lists)) {
+      if (list.includes(traditional)) {
+        const comboSet = comboSets[listName];
+        const chars = comboSet.get(code) || new Set();
+        chars.add(traditional);
+        comboSet.set(code, chars);
+        return;
+      }
     }
-    if (!font.hasGlyphForCodePoint(traditional.charCodeAt(0))) {
-      continue;
-    }
-    chars.push({ traditional, ordering });
-    layout.set(key, chars);
-    layouts.set(scope, layout);
+    const chars = comboSetRest.get(code) || new Set();
+    chars.add(traditional);
+    comboSetRest.set(code, chars);
   }
 });
 
-reader.on("close", () => {
-  const trimmedLayouts = {};
-  for (const [scope, layout] of layouts) {
-    for (const [key, chars] of layout) {
-      if (chars.length > 1) {
-        console.log("code clash:", scope, key, chars);
-      }
-    }
-    const out = {};
-    const keys = Array.from(layout.keys()).sort();
-    for (const key of keys) {
-      if (!layout.get(key)) {
-        console.log("missing?", scope, key, layout);
-        continue;
-      }
-      out[key] = layout
-        .get(key)
-        .map((x) => x.traditional)
-        .join("");
-    }
-    trimmedLayouts[scope] = out;
+function formatComboSet(comboSet) {
+  const out = {};
+  for (const [code, chars] of comboSet) {
+    out[code] = Array.from(chars).join("");
   }
-  fs.writeFileSync(
-    `src/data/layouts.json`,
-    JSON.stringify(trimmedLayouts, null, 2) + "\n"
-  );
+
+  return out;
+}
+
+reader.on("close", () => {
+  const out = {};
+  for (const [name, comboSet] of Object.entries(comboSets)) {
+    out[name] = formatComboSet(comboSet);
+  }
+  out.rest = formatComboSet(comboSetRest);
+
+  fs.writeFileSync(`src/data/combos.json`, JSON.stringify(out, null, 2) + "\n");
 });
