@@ -6,14 +6,14 @@ const fontCollection = fontkit.openSync("/System/Library/Fonts/PingFang.ttc");
 const font = fontCollection.fonts[0];
 
 const reader = readline.createInterface({
-  input: fs.createReadStream("src/data/data_table.txt", "utf8"),
+  input: fs.createReadStream("data/data_table.txt", "utf8"),
 });
 
 const lists = {
-  hsk1: fs.readFileSync("src/data/hsk1.txt", "utf8"),
-  hsk2: fs.readFileSync("src/data/hsk2.txt", "utf8"),
-  hsk3: fs.readFileSync("src/data/hsk3.txt", "utf8"),
-  hsk4: fs.readFileSync("src/data/hsk4.txt", "utf8"),
+  hsk1: fs.readFileSync("data/hsk1.txt", "utf8"),
+  hsk2: fs.readFileSync("data/hsk2.txt", "utf8"),
+  hsk3: fs.readFileSync("data/hsk3.txt", "utf8"),
+  hsk4: fs.readFileSync("data/hsk4.txt", "utf8"),
 };
 const listNames = Object.keys(lists);
 
@@ -81,5 +81,5 @@ reader.on("close", () => {
   }
   out.rest = formatComboSet(comboSetRest);
 
-  fs.writeFileSync(`src/data/combos.json`, JSON.stringify(out, null, 2) + "\n");
+  fs.writeFileSync(`src/combos.json`, JSON.stringify(out, null, 2) + "\n");
 });
