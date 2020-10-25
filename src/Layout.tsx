@@ -37,13 +37,21 @@ function renderKey(
         {getCangjieKey(cap)}
       </div>
       <div className={style.keyFg} style={{ width: unit, height: unit * 1.1 }}>
-        <span>{chars}</span>
+        <span>{chars.substring(0, charLimit)}</span>
         <span style={{ opacity: 0.5 }}>
           {gather(combos, sortedCodes, scope, charLimit - chars.length)}
         </span>
       </div>
     </div>
   );
+}
+
+function debounce(fn: () => void, ms: number) {
+  let task = null as null | NodeJS.Timeout;
+  return () => {
+    if (task) clearTimeout(task);
+    task = setTimeout(fn, ms);
+  };
 }
 
 export default function Layout({
@@ -59,8 +67,14 @@ export default function Layout({
   const [width, setWidth] = useState(0);
   useEffect(() => {
     setWidth(ref.current?.offsetWidth ?? 0);
+    const resize = debounce(() => {
+      setWidth(ref.current?.offsetWidth ?? 0);
+    }, 100);
+    resize();
+    window.addEventListener("resize", resize);
+    return () => window.removeEventListener("resize", resize);
   }, []);
-  const unit = (width - 45) / 10;
+  const unit = (width - 2 * 9) / 10;
   const charLimit = Math.pow(Math.floor(unit / 16), 2);
   return (
     <div ref={ref} className={style.root}>
