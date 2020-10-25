@@ -23,6 +23,10 @@
   margin-left: 2px;
 }
 
+.key.targeted {
+  background-color: #444;
+}
+
 .keyBg {
   overflow: hidden;
   position: absolute;

@@ -23,7 +23,12 @@ function App() {
   return (
     <div className={style.root}>
       <Settings opts={opts} onChange={setOpts} />
-      <Layout scope={scope} combos={combos} sortedCodes={sortedCodes} />
+      <Layout
+        scope={scope}
+        combos={combos}
+        sortedCodes={sortedCodes}
+        targetChar={targetChar?.value ?? null}
+      />
       <TargetText
         text={targetText}
         onChange={setTargetText}

@@ -119,3 +119,19 @@ export function getData(opts: Opts): DataPair {
   dataCache[cacheKey] = data;
   return data;
 }
+
+const charToCodes: Record<string, string[]> = {};
+for (const comboSet of Object.values(combos as Record<string, Dict>)) {
+  for (const [code, chars] of Object.entries(comboSet)) {
+    for (let i = 0; i < chars.length; i++) {
+      const char = chars[i];
+      const codes = charToCodes[char] || [];
+      codes.push(code);
+      charToCodes[char] = codes;
+    }
+  }
+}
+
+export function getCodesForChar(char: string) {
+  return charToCodes[char] || [];
+}
