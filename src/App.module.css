@@ -3,7 +3,7 @@
   height: 100vh;
   position: relative;
   display: grid;
-  grid-template-rows: auto auto 1fr;
+  grid-template-rows: auto auto auto 1fr;
   grid-gap: 1rem;
   padding: 1rem;
 }
